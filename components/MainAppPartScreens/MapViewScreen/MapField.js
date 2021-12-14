@@ -5,15 +5,20 @@ import MapView,{ Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions'
 
 export default function MapField({isCanCreateRoute, setIsCanCreateRoute }) {
+    /* Get values ... */
     const routeMarkersCoordinates = useSelector(state => state.mapData.routeMarkersCoordinates)
+    
+    /* Get current 'type of step' while setuping locations in first form  */
     const typeOfStep = useSelector(state => state.mapData.typeOfStep)
 
     const mapRef = useRef(null);
     useEffect(() => { 
+        /* Get 'route markers coordinates' that match current 'type of step' */
         let rc = routeMarkersCoordinates.filter((rc, index) => {
             if (rc.markerType === typeOfStep) return rc
         })
-        
+
+        /* Show location on map */
         if (rc[0].latlng != null) { 
             mapRef.current.animateToRegion({ 
                 latitude: rc[0].latlng.lat, 
@@ -58,7 +63,7 @@ export default function MapField({isCanCreateRoute, setIsCanCreateRoute }) {
                 )
             }
 
-            {/* Create route */}
+            {/* Create route */}  
             {
                 isCanCreateRoute 
                 ?

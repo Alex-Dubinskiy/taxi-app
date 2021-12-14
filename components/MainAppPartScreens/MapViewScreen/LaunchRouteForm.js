@@ -5,21 +5,31 @@ import { setTypeOfStep, GetCurrentLocation, setRouteMarkersCoordinates, setIsSet
 import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native'
 import SearchField from './SearchField'
 
-export default function LaunchRouteForm({setIsCanCreateRoute, setNextStepStatus }) {
+export default function LaunchRouteForm({setIsCanCreateRoute, nextStepStatus, setNextStepStatus, isShowFormsForCreationRoute }) {
     const dispatch = useDispatch()
+
+    /* Get location info after clicking on 'Current location' button */
     const currentLocation = useSelector(state => state.mapData.currentLocation)
+
+    /* Get current 'type of step' while setuping locations in first form  */
     const typeOfStep = useSelector(state => state.mapData.typeOfStep)
 
+    /* Show/hidden first form */
     const [isBlockCollapsed, setIsBlockCollapsed] = useState(true)
     
     // Getting current location
     useEffect(async () => {
         await dispatch(GetCurrentLocation())
     }, [])
+
+    useEffect(() => {
+        if (!nextStepStatus) setIsBlockCollapsed(true)
+    }, [nextStepStatus])
     
     const getCurrentLocation = async () => {
         if (currentLocation != null ) {
              // console.log(currentLocation)
+            /* Setup current location info as data for first marker  */
             dispatch(setRouteMarkersCoordinates(
                 {
                     index: 0, 
@@ -43,66 +53,69 @@ export default function LaunchRouteForm({setIsCanCreateRoute, setNextStepStatus 
         return <ActivityIndicator size={'large'} color="yellow"/>
     }
 
-    return (
-        <View style={[styles.container, {height: isBlockCollapsed ? 280 : 65}]}>
-            <View style={styles.header}>
-                <Text style={styles.caption}>
-                    Where are you going?
-                </Text> 
+    if (isShowFormsForCreationRoute)
+        return (
+            <View style={[styles.container, {height: isBlockCollapsed ? 280 : 65}]}>
+                <View style={styles.header}>
+                    <Text style={styles.caption}>
+                        Where are you going?
+                    </Text> 
 
-                <TouchableOpacity style={styles.collapseBtnWrapper} onPress={() => setIsBlockCollapsed(prev => !prev) }>
-                    {   isBlockCollapsed 
-                        ? 
-                        <AntDesign name="upcircleo" size={20} color="#fcba03" />
-                        :
-                        <AntDesign name="downcircleo" size={20} color="#fcba03" />
-                    }
-                </TouchableOpacity>
+                    <TouchableOpacity style={styles.collapseBtnWrapper} onPress={() => setIsBlockCollapsed(prev => !prev) }>
+                        {   isBlockCollapsed 
+                            ? 
+                            <AntDesign name="upcircleo" size={20} color="#fcba03" />
+                            :
+                            <AntDesign name="downcircleo" size={20} color="#fcba03" />
+                        }
+                    </TouchableOpacity>
+                </View>
+
+                {
+                    isBlockCollapsed ?  <SearchField /> : console.log()
+                }
+            
+                {
+                    typeOfStep == 'From' && isBlockCollapsed
+                    ?
+                        <View style={styles.stepWrapper}>
+                            <TouchableOpacity style={[styles.myCurrentLocationBtn]} onPress={() => getCurrentLocation() }>
+                                <Text style={styles.myCurrentLocationBtn_caption}>
+                                    •  My current location
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* <SearchField />  */}
+
+                            <TouchableOpacity style={styles.operationBtn} onPress={() => dispatch(setTypeOfStep({typeOfStep: 'To'})) }>
+                                <Text style={styles.operationBtn_caption}>
+                                    Next step (1)
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    : typeOfStep == 'To' && isBlockCollapsed
+                    ? 
+                        <View style={styles.stepWrapper}>
+                            <TouchableOpacity style={[styles.myCurrentLocationBtn, {display: 'none'}]}>
+                                <Text style={styles.myCurrentLocationBtn_caption}>
+                                    •  My current location
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* <SearchField />  */}
+
+                            <TouchableOpacity style={styles.operationBtn} onPress={() => nextStep_2_BtnClick()}>
+                                <Text style={styles.operationBtn_caption}>
+                                    Next step (2)
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    : <View></View>
+                }
             </View>
-
-            {
-                isBlockCollapsed ?  <SearchField /> : console.log()
-            }
-           
-            {
-                typeOfStep == 'From' && isBlockCollapsed
-                ?
-                    <View style={styles.stepWrapper}>
-                        <TouchableOpacity style={[styles.myCurrentLocationBtn]} onPress={() => getCurrentLocation() }>
-                            <Text style={styles.myCurrentLocationBtn_caption}>
-                                •  My current location
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* <SearchField />  */}
-
-                        <TouchableOpacity style={styles.operationBtn} onPress={() => dispatch(setTypeOfStep({typeOfStep: 'To'})) }>
-                            <Text style={styles.operationBtn_caption}>
-                                Next step (1)
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                : typeOfStep == 'To' && isBlockCollapsed
-                ? 
-                    <View style={styles.stepWrapper}>
-                        <TouchableOpacity style={[styles.myCurrentLocationBtn, {display: 'none'}]}>
-                            <Text style={styles.myCurrentLocationBtn_caption}>
-                                •  My current location
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* <SearchField />  */}
-
-                        <TouchableOpacity style={styles.operationBtn} onPress={() => nextStep_2_BtnClick()}>
-                            <Text style={styles.operationBtn_caption}>
-                                Next step (2)
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                : <View></View>
-            }
-        </View>
-    )
+        )
+    else
+        return (<View></View>)
 }
 
 const styles = StyleSheet.create({

@@ -4,8 +4,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { setSelectedCarData, setSelectedCarDriverData } from '../../../store_redux/mapDataSlice';
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native'
 
-
-export default function SelectDriverAndCarForm({setIsCanCreateRoute, nextStepStatus, createRouteLine }) {
+export default function SelectDriverAndCarForm({setIsCanCreateRoute, nextStepStatus, createRouteLine, isShowFormsForCreationRoute, setIsShowFormsForCreationRoute, setShowRouteInfoBtn, setIsTripRouteBuilt}) {
     const dispatch = useDispatch()
     const [isBlockCollapsed, setIsBlockCollapsed] = useState(false)
 
@@ -33,11 +32,13 @@ export default function SelectDriverAndCarForm({setIsCanCreateRoute, nextStepSta
     useEffect(() => {
         if (nextStepStatus) 
             setIsBlockCollapsed(true)
+        else 
+            setIsBlockCollapsed(false)
     }, [nextStepStatus])
     
     const carInfoListItem = ({ item }) => {
         return (
-            <TouchableOpacity style={[styles.selectDriverAndCarBtn, styles.carDriverInfoListItemWrapper]} onPress={() => carListItemClick({ selectedCarData: {car_title: item.title, cost: item.cost, photo_url: item.photo_url }})}>
+            <TouchableOpacity style={[styles.selectDriverAndCarBtn, styles.carDriverInfoListItemWrapper]} onPress={() => carListItemClick({ selectedCarData: {car_title: item.title, cost: item.cost, photo_url: item.photo_url }})} activeOpacity={0.8}>
                 <Image
                     style={styles.icon_img} 
                     source={{uri: item.photo_url}}
@@ -55,7 +56,7 @@ export default function SelectDriverAndCarForm({setIsCanCreateRoute, nextStepSta
 
     const carDriverInfoListItem = ({ item }) => {
         return (
-            <TouchableOpacity style={[styles.selectDriverAndCarBtn, styles.carInfoListItemWrapper]} onPress={() => carDriverListItemClick({ selectedCarDriverData: {name: item.name, age: item.age, photo_url: item.photo_url} })}>
+            <TouchableOpacity style={[styles.selectDriverAndCarBtn, styles.carInfoListItemWrapper]} onPress={() => carDriverListItemClick({ selectedCarDriverData: {name: item.name, age: item.age, photo_url: item.photo_url} })} activeOpacity={0.8}>
                 <Image
                     style={styles.icon_img} 
                     source={{uri: item.photo_url}}
@@ -75,103 +76,109 @@ export default function SelectDriverAndCarForm({setIsCanCreateRoute, nextStepSta
         if (nextStepStatus) {
             setIsBlockCollapsed(false)
             createRouteLine()
+            setIsShowFormsForCreationRoute(false)
+            setShowRouteInfoBtn(true)
+            setIsTripRouteBuilt(true)
         }
     }
 
     if (!car_drivers && !cars) return (<Text>Loading...</Text>)
 
-    return (
-        <View style={[styles.container, {height: isBlockCollapsed ? 290 : 65}]}>
-            <View style={styles.header}>
-                <Text style={styles.caption}>
-                    Select preffer driver and car.
-                </Text> 
+    if (isShowFormsForCreationRoute)
+        return (
+            <View style={[styles.container, {height: isBlockCollapsed ? 290 : 65}]}>
+                <View style={styles.header}>
+                    <Text style={styles.caption}>
+                        Select preffer driver and car.
+                    </Text> 
 
-                <TouchableOpacity style={styles.collapseBtnWrapper} onPress={() => setIsBlockCollapsed(prev => !prev) }>
-                    {   isBlockCollapsed 
-                        ? 
-                        <AntDesign name="upcircleo" size={20} color="#fcba03" />
-                        :
-                        <AntDesign name="downcircleo" size={20} color="#fcba03" />
-                    }
-                </TouchableOpacity>
-            </View>
-
-            { isBlockCollapsed
-                ?
-                <View style={styles.selectCarBtnWrapper}>
-                    <TouchableOpacity style={styles.selectDriverAndCarBtn} onPress={() => setIsCarBtnClicked(prev => !prev)}>
-                        <Image
-                            style={styles.icon_img} 
-                            source={{uri: selectedCarData.photo_url}}
-                        />
-                        <Text style={styles.selectDriverAndCarBtn_caption}>
-                            {selectedCarData.car_title}
-                        </Text>
-                        
-                        <Text style={[styles.selectDriverAndCarBtn_caption, {position: 'absolute', right: 15}]}>
-                            {selectedCarData.cost} ($)
-                        </Text>
+                    <TouchableOpacity style={styles.collapseBtnWrapper} onPress={() => setIsBlockCollapsed(prev => !prev) }>
+                        {   isBlockCollapsed 
+                            ? 
+                            <AntDesign name="upcircleo" size={20} color="#fcba03" />
+                            :
+                            <AntDesign name="downcircleo" size={20} color="#fcba03" />
+                        }
                     </TouchableOpacity>
+                </View>
 
-                    { isCarBtnClicked && true
-                        ?
-                        <View style={[styles.flatList_wrapper, {zIndex: 5}]}>
-                            <FlatList
-                                data={cars}
-                                renderItem={carInfoListItem}
-                                keyExtractor={item => item.id}
+                { isBlockCollapsed
+                    ?
+                    <View style={styles.selectCarBtnWrapper}>
+                        <TouchableOpacity style={styles.selectDriverAndCarBtn} onPress={() => setIsCarBtnClicked(prev => !prev)}>
+                            <Image
+                                style={styles.icon_img} 
+                                source={{uri: selectedCarData.photo_url}}
                             />
+                            <Text style={styles.selectDriverAndCarBtn_caption}>
+                                {selectedCarData.car_title}
+                            </Text>
+                            
+                            <Text style={[styles.selectDriverAndCarBtn_caption, {position: 'absolute', right: 15}]}>
+                                {selectedCarData.cost} ($)
+                            </Text>
+                        </TouchableOpacity>
+
+                        { isCarBtnClicked && true
+                            ?
+                            <View style={[styles.flatList_wrapper, {zIndex: 5}]}>
+                                <FlatList
+                                    data={cars}
+                                    renderItem={carInfoListItem}
+                                    keyExtractor={item => item.id}
+                                />
+                                </View>
+                            : console.log()
+                        } 
+                    
+                    </View>
+                    : console.log()
+                }
+
+                { isBlockCollapsed
+                    ?
+                    <View style={styles.selectCarDriverBtnWrapper}>
+                        <TouchableOpacity style={styles.selectDriverAndCarBtn} onPress={() => setIsCarDriverBtnClicked(prev => !prev)}>
+                            <Image
+                                style={styles.icon_img} 
+                                source={{uri: selectedCarDriverData.photo_url}}
+                            />
+                            <Text style={styles.selectDriverAndCarBtn_caption}>
+                                {selectedCarDriverData.name}
+                            </Text>
+                            <Text style={[styles.selectDriverAndCarBtn_caption, {position: 'absolute', right: 15}]}>
+                                {selectedCarDriverData.age}
+                            </Text>
+                        </TouchableOpacity>
+
+                        { isCarDriverBtnClicked
+                            ?
+                            <View style={[styles.flatList_wrapper, {zIndex: 3}]}>
+                                <FlatList
+                                    data={car_drivers}
+                                    renderItem={carDriverInfoListItem}
+                                    keyExtractor={item => item.id}
+                                />
                             </View>
-                        : console.log()
-                    } 
-                   
-                </View>
-                : console.log()
-            }
+                            : console.log()
+                        } 
+                    </View>
+                    : console.log()
+                }
 
-            { isBlockCollapsed
-                ?
-                <View style={styles.selectCarDriverBtnWrapper}>
-                    <TouchableOpacity style={styles.selectDriverAndCarBtn} onPress={() => setIsCarDriverBtnClicked(prev => !prev)}>
-                        <Image
-                            style={styles.icon_img} 
-                            source={{uri: selectedCarDriverData.photo_url}}
-                        />
-                        <Text style={styles.selectDriverAndCarBtn_caption}>
-                            {selectedCarDriverData.name}
-                        </Text>
-                        <Text style={[styles.selectDriverAndCarBtn_caption, {position: 'absolute', right: 15}]}>
-                            {selectedCarDriverData.age}
+                { isBlockCollapsed 
+                    ?
+                    <TouchableOpacity style={styles.applyBtn} onPress={() => applyBtnClick()}>
+                        <Text style={styles.applyBtn_caption}>
+                            Apply
                         </Text>
                     </TouchableOpacity>
-
-                    { isCarDriverBtnClicked
-                        ?
-                        <View style={[styles.flatList_wrapper, {zIndex: 3}]}>
-                            <FlatList
-                                data={car_drivers}
-                                renderItem={carDriverInfoListItem}
-                                keyExtractor={item => item.id}
-                            />
-                        </View>
-                        : console.log()
-                    } 
-                </View>
-                : console.log()
-            }
-
-            { isBlockCollapsed 
-                ?
-                <TouchableOpacity style={styles.applyBtn} onPress={() => applyBtnClick()}>
-                    <Text style={styles.applyBtn_caption}>
-                        Apply
-                    </Text>
-                </TouchableOpacity>
-                : console.log()
-            }
-        </View>
-    )
+                    : console.log()
+                }
+            </View>
+        )
+    else
+        return (<View></View>)
 }
 
 const styles = StyleSheet.create({
@@ -263,7 +270,7 @@ const styles = StyleSheet.create({
         top: 80,           
         width: '100%',
         position: 'absolute',
-        zIndex: 3
+        zIndex: 10
 
     },
     applyBtn:{

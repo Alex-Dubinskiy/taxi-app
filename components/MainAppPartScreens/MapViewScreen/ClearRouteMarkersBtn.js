@@ -1,16 +1,40 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { setTypeOfStep, setEmptyValuesForRouteMarkersCoordinates, setIsSetCurrentLocationTitle } from '../../../store_redux/mapDataSlice'
+import { setTypeOfStep, setEmptyValuesForRouteMarkersCoordinates, setIsSetCurrentLocationTitle, setSelectedCarData, setSelectedCarDriverData } from '../../../store_redux/mapDataSlice'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 
-export default function ClearRouteMarkersBtn({setIsCanCreateRoute}) {
+export default function ClearRouteMarkersBtn({setIsCanCreateRoute, setNextStepStatus, setIsShowFormsForCreationRoute, setShowRouteInfoBtn, setIsTripRouteBuilt}) {
     const dispatch = useDispatch()
 
     const RemoveRouteData = () => {
+        setShowRouteInfoBtn(false)
+        setNextStepStatus(false) // for collapse 'SelectDriverAndCarForm'
         setIsCanCreateRoute(false)
+        /* For 'LaunchRouteForm */
         dispatch(setEmptyValuesForRouteMarkersCoordinates())
         dispatch(setTypeOfStep({typeOfStep: 'From'}))
         dispatch(setIsSetCurrentLocationTitle({isSetCurrentLocationTitle: false}))
+        /* For 'SelectDriverAndCarForm' */
+        dispatch(setSelectedCarData(
+            { 
+                selectedCarData: {
+                    car_title: 'Car',
+                    cost: 'cost',
+                    photo_url: 'https://cdn-icons.flaticon.com/png/512/550/premium/550876.png?token=exp=1639404512~hmac=b1f4bcd6cd956390697b8b5173822599'
+                }
+            }
+        ))
+        dispatch(setSelectedCarDriverData(
+            { 
+                selectedCarDriverData: {
+                    name: 'Driver',
+                    age: 'age',
+                    photo_url: 'https://cdn-icons.flaticon.com/png/512/122/premium/122447.png?token=exp=1639404563~hmac=78800406b6bfabb5a31e76e66fbf9e39',
+                }
+            }
+        ))
+        setIsShowFormsForCreationRoute(true)
+        setIsTripRouteBuilt(false)
     }
 
     return (

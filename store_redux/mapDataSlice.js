@@ -45,7 +45,7 @@ const initialState = {
   },
   selectedCarDriverData: {
     name: 'Driver',
-    age: 'age',
+    age: '(age)',
     photo_url: 'https://cdn-icons.flaticon.com/png/512/122/premium/122447.png?token=exp=1639404563~hmac=78800406b6bfabb5a31e76e66fbf9e39',
   },
   /* ------------------------ */
@@ -102,8 +102,6 @@ export const mapDataSlice = createSlice({
         cost: action.payload.selectedCarData.cost,
         photo_url: action.payload.selectedCarData.photo_url,
       }
-      console.log(state.selectedCarData 
-        )
     },
     setSelectedCarDriverData: (state, action) => {
       state.selectedCarDriverData = {
@@ -111,8 +109,6 @@ export const mapDataSlice = createSlice({
         age: action.payload.selectedCarDriverData.age,
         photo_url: action.payload.selectedCarDriverData.photo_url
       }
-      console.log(state.selectedCarDriverData 
-        )
     },
     /* ------------------------ */
     setIsSetCurrentLocationTitle: (state, action) => {

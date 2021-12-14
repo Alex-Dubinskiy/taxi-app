@@ -11,6 +11,8 @@ export default function SearchField() {
     const typeOfStep = useSelector(state => state.mapData.typeOfStep)
     
     const searchQueryFieldRef = useRef("null");
+
+    /* Set placeholder-text in search location input when was chosen 'current location' as first marker */
     useEffect(() => {
         if (isSetCurrentLocationTitle == true)
             searchQueryFieldRef.current.setAddressText('Your current location...');
