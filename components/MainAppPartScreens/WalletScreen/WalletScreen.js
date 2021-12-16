@@ -1,23 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import { setUserWalletData } from '../../../store_redux/otherAppDataSlice'
 import { Feather } from '@expo/vector-icons'; 
-import { StyleSheet, TouchableOpacity, View, Text, FlatList } from 'react-native'
+import { StyleSheet, TouchableOpacity, View, Text, FlatList, ActivityIndicator } from 'react-native'
 import { AntDesign, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'; 
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { auth } from '../../../firebase';
 import { onAuthStateChanged } from 'firebase/auth'
 
-import { getDatabase } from "firebase/database";
-
-const database = getDatabase();
+import { getDatabase, ref, get, set, onValue } from "firebase/database";
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function WalletScreen({navigation}) {
-    // console.log(auth)
-    console.log(database)
+    const [USER_WALLETS_DATA, set_USER_WALLETS_DATA] = useState([])
+    
+    const userWalletData = useSelector(state => state.otherAppData.userWalletData) 
 
-    onAuthStateChanged(auth, currentUser => {
-       
-    })
-
+    console.log(USER_WALLETS_DATA)
     const TRANSITS_DATA = [
         {
             id: 1,
@@ -30,13 +28,48 @@ export default function WalletScreen({navigation}) {
         }
     ];
 
-    const PAYMENT_METHODS_DATA = [
-        {
-            id: 1,
-            card_number: '1111-2222-3333-4444',
-            card_balance: '1000'
-        }
-    ];
+    // console.log(auth)
+    // console.log(database)
+
+    // onAuthStateChanged(auth, currentUser => {
+       
+    // })
+
+    const dispatch = useDispatch();
+    // Get data from remote BD (Firebase)
+    const getUserWalletData = useCallback(
+        async () => {
+            if (!userWalletData) {
+                const db = getDatabase();
+                const db_ref = ref(db, 'users_data/wallets_data');
+                const db_result = await get(db_ref)
+
+                const userWalletData_ = db_result.val();
+                dispatch(setUserWalletData({userWalletData: userWalletData_}))
+            }
+        }, [] 
+    )
+
+    useEffect(() => {
+        getUserWalletData()
+        set_USER_WALLETS_DATA([userWalletData])
+    }, [getUserWalletData])
+
+    
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null) 
+    /* Setuping selected payment method */
+
+    const setupSelectedPaymentMethod = (pMethod, item) => {
+        setSelectedPaymentMethod({
+            paymentMethod: pMethod,
+            paymentData: {
+                id: item.id,
+                card_number: item.card_number,
+                card_balance: item.card_balance
+            }
+        })
+        setShowPaymentMethodsList(false)
+    }
 
     const historyItemWrapper = ({item}) => {
         return (
@@ -51,11 +84,11 @@ export default function WalletScreen({navigation}) {
 
     const paymentMethodItemWrapper = ({item}) => {
         return (
-            <View style={styles.subEl_4_button}>
+            <TouchableOpacity style={styles.subEl_4_button} onPress={() => setupSelectedPaymentMethod('card', item )}>
                 <AntDesign name="creditcard" size={24} color="#fcba03" />
                 <Text style={styles.subEl_4_btn_text}> {item.card_number} </Text>
                 <Text style={styles.subEl_4_btn_text}> {item.card_balance} $ </Text>
-            </View>
+            </TouchableOpacity>
         )
     }
 
@@ -67,8 +100,6 @@ export default function WalletScreen({navigation}) {
     
     const [showHistoryBlock, setShowHistoryBlock] = useState(false)
     const [showPaymentMethodsList, setShowPaymentMethodsList] = useState(true)
-
-    let isExistOneIfThePaymentMethod = false
 
     return (
         <View style={styles.container}>
@@ -94,7 +125,7 @@ export default function WalletScreen({navigation}) {
                     <Text style={styles.from_to_locations_text}>
                     </Text>
                 </View>
-            : console.log()}
+            : console.log(selectedPaymentMethod)}
             
             <ScrollView style={styles.scrV_container}>
                 <View style={styles.firstSection}>
@@ -105,7 +136,7 @@ export default function WalletScreen({navigation}) {
                             </Text>
 
                             <Text style={styles.subEl_1_text}>
-                                {/* 66.757,30 $ */} 0
+                                { selectedPaymentMethod.paymentData.card_balance ? selectedPaymentMethod.paymentData.card_balance + ' $' : 'Your cash' }
                             </Text>
                         </View>
 
@@ -126,12 +157,23 @@ export default function WalletScreen({navigation}) {
                         </Text>
 
                         { 
-                            isExistOneIfThePaymentMethod 
+                            selectedPaymentMethod != null
                             ? 
-                            <TouchableOpacity style={[styles.subEl_3_button, { backgroundColor: showPaymentMethodsList ? '#DC9D00' : '#fcba03' }]}>
-                                <AntDesign name="creditcard" size={24} color="#fff8f2" />
-                                <Text style={styles.subEl_3_btn_text}> Credit card </Text>
-                            </TouchableOpacity>
+                                selectedPaymentMethod.paymentMethod == "card" 
+                                ?
+                                    <TouchableOpacity style={[styles.subEl_3_button, { backgroundColor: showPaymentMethodsList ? '#DC9D00' : '#fcba03' }]} onPress={() => setShowPaymentMethodsList(prev => !prev)}>
+                                        <AntDesign name="creditcard" size={24} color="#fff8f2" />
+                                        <Text style={styles.subEl_3_btn_text}> Credit card </Text>
+                                    </TouchableOpacity>
+                                :
+                                selectedPaymentMethod.paymentMethod == "cash" 
+                                ?
+                                    <TouchableOpacity style={[styles.subEl_3_button, { backgroundColor: showPaymentMethodsList ? '#DC9D00' : '#fcba03' }]} onPress={() => setShowPaymentMethodsList(prev => !prev)}>
+                                        <Ionicons name="cash-outline" size={24} color="#fff8f2" />
+                                        <Text style={styles.subEl_3_btn_text}> Cash </Text>
+                                    </TouchableOpacity>
+                                : 
+                                    <View></View>
                             :  
                             <TouchableOpacity style={[styles.subEl_3_button, { backgroundColor: showPaymentMethodsList ? '#DC9D00' : '#fcba03' }]} onPress={() => setShowPaymentMethodsList(prev => !prev)}>
                                 <MaterialCommunityIcons name="form-select" size={24} color="#fff8f2" />
@@ -142,22 +184,22 @@ export default function WalletScreen({navigation}) {
                 </View>
                 {/* Payment methods list */}
 
-                { showPaymentMethodsList 
+                { showPaymentMethodsList
                 ?
                     <View style={styles.paymentMethodListWrapper}>
                         <FlatList
-                            data={PAYMENT_METHODS_DATA}
+                            data={USER_WALLETS_DATA}
                             renderItem={paymentMethodItemWrapper}
                             keyExtractor={item => item.id}
                         />
 
                         <View style={styles.bts_wrapper}>
-                            <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_cash_button]}>
+                            <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_cash_button]} onPress={() => setupSelectedPaymentMethod('cash', {})}>
                                 <Ionicons name="cash-outline" size={24} color="#8a8a8a" />
                                 <Text style={[styles.subEl_3_btn_text, styles.subEl_3_addCart_text]}> Cash </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_addCard_button]}>
+                            <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_addCard_button]} onPress={() => setupSelectedPaymentMethod('card', {})}>
                                 <Ionicons name="cash-outline" size={24} color="#fff8f2" />
                                 <Text style={styles.subEl_3_btn_text}> Add card </Text>
                             </TouchableOpacity>
@@ -191,10 +233,6 @@ export default function WalletScreen({navigation}) {
 
                 <TouchableOpacity style={styles.apply_button}>
                     <Text style={styles.applyBtn_text}> Apply </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.addPayment_button}>
-                    <Text style={styles.addPaymentBtn_text}> Add payment method </Text>
                 </TouchableOpacity>
             </ScrollView>
         </View>
@@ -447,21 +485,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#fcba03',
     },
     applyBtn_text: {
-        textAlign: 'center',
-        fontFamily: 'murecho_sBold',
-        fontSize: 15,
-        color: '#fff8f2'
-    },
-    /* Add payment method button */
-    addPayment_button: {
-        borderRadius: 10,
-        marginHorizontal: 20,
-        paddingHorizontal: 35,
-        paddingVertical: 15,
-        marginTop: 35,
-        backgroundColor: '#fcba03',
-    },
-    addPaymentBtn_text: {
         textAlign: 'center',
         fontFamily: 'murecho_sBold',
         fontSize: 15,
