@@ -59,7 +59,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 20,
         bottom: 20,
-        zIndex: 3
+        zIndex: 3,
+        shadowColor: "#fcba03",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.41,
+        shadowRadius: 9.11,
+        elevation: 14,
     }, 
     icon_img: {
         width: 30,

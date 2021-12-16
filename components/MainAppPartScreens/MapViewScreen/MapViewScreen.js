@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { database } from '../../../firebase';
 import { get, ref } from 'firebase/database';
-import { StyleSheet, View } from 'react-native';
+import { Feather } from '@expo/vector-icons'; 
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCarDrivers, setCars } from '../../../store_redux/mapDataSlice';
 import LaunchRouteForm from './LaunchRouteForm';
@@ -11,7 +12,7 @@ import SelectDriverAndCarForm from './SelectDriverAndCarForm';
 import ShowRouteInfoBtn from './ShowRouteInfoBtn';
 import RouteInfoBlock from './RouteInfoBlock';
 
-export default function MapViewScreen() {
+export default function MapViewScreen({navigation}) {
     const dispatch = useDispatch();
 
     /* Storing the status that taxi route is built */
@@ -59,6 +60,10 @@ export default function MapViewScreen() {
     
     return (
         <View style={styles.container}>
+            <TouchableOpacity style={styles.burgerMenu_btn} onPress={() => navigation.openDrawer()}>
+                <Feather name="menu" size={24} color="black" />
+            </TouchableOpacity>
+
             <MapField isCanCreateRoute={isCanCreateRoute} setIsCanCreateRoute={setIsCanCreateRoute} />
             
             <View style={styles.wrapperForms}>
@@ -81,9 +86,31 @@ const styles = StyleSheet.create({
         position: 'relative'
    },
    wrapperForms: {
-       position: 'absolute',
-       top: 20,
-       width: '100%',
-       alignItems: 'center',
+        position: 'absolute',
+        top: 120,
+        width: '100%',
+        alignItems: 'center',
+   },
+   burgerMenu_btn: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 15,
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        borderColor: '#fff',
+        borderWidth: 1,
+        borderRadius: 50,
+        position: 'absolute',
+        left: 20,
+        top: 40,
+        zIndex: 3,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.32,
+        shadowRadius: 5.46,
+        
+        elevation: 9
    }
 })

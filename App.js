@@ -2,6 +2,7 @@ import * as Font from 'expo-font';
 import AppLoading from 'expo-app-loading';
 import React from 'react';
 import 'react-native-gesture-handler';
+import 'react-native-reanimated';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { StyleSheet } from 'react-native';
@@ -11,6 +12,7 @@ import StartScreen from './components/StartScreen/StartScreen';
 import AuthSlider from './components/AuthorizationScreens/authSlider';
 import MainAppPart from './components/MainAppPartScreens/MainAppPart';
 import SliderForFirstAppLoad from './components/SliderForFirstAppLoad';
+import DrawerNavAside from './components/DrawerNavigation/DrawerNavAside';
 
 // Fonts init
 const fonts = () => Font.loadAsync ({
@@ -34,9 +36,10 @@ export default function App() {
             {headerShown: false}
           }>
             <Stack.Screen name="StartScreen" component={StartScreen} />
-            <Stack.Screen name="AuthSlider" component={AuthSlider} />
-            <Stack.Screen name="MainAppPart" component={MainAppPart} />
-            <Stack.Screen name="SliderForFirstAppLoad" component={SliderForFirstAppLoad} />
+            {/* <Stack.Screen name="AuthSlider" component={AuthSlider} /> */}
+            {/* <Stack.Screen name="MainAppPart" component={MainAppPart} /> */}
+            {/* <Stack.Screen name="SliderForFirstAppLoad" component={SliderForFirstAppLoad} /> */}
+            <Stack.Screen name="DrawerNavAside" component={DrawerNavAside} />
           </Stack.Navigator>
         </NavigationContainer>
       </Provider>

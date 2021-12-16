@@ -57,7 +57,7 @@ export default function RouteInfoBlock({ showRouteInfoBtn }) {
                             </Text> 
 
                             <Text style={styles.routeItemDataDirection_yearsOrCost}>
-                                {selectedCarData.cost} $
+                                {selectedCarData.cost}
                             </Text> 
                         </View>
                     </View>

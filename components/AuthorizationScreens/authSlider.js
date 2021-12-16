@@ -51,8 +51,8 @@ export default function AuthSlider({storeData, getData}) {
             dispatch(setIsAuth({ 
                 isAuth: true
             }))  
-
-            navigation.navigate("MainAppPart")
+            
+            // navigation.navigate("DrawerNavAside")
         })
         .catch(error => console.log(error.message))
     }

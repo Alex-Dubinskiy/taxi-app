@@ -39,6 +39,7 @@ export default function StartScreen({navigation}) {
             }
             else {
                 setIsAuth(true)
+                navigation.navigate("DrawerNavAside")
             }
         })
     },[])
@@ -55,7 +56,7 @@ export default function StartScreen({navigation}) {
                     <AuthSlider storeData={storeData} getData={getData}/>
 
                     : isAuth == true ?
-                    <MainAppPart />
+                    <View></View>
 
                     : <View></View>
                 : 
