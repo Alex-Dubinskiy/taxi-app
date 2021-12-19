@@ -42,7 +42,7 @@ export default function SearchField() {
                     dispatch(setRouteMarkersCoordinates(
                         {
                             index: i, 
-                            title: details.address_components[0].long_name,
+                            title: details.address_components[1].long_name,
                             latlng: details.geometry.location
                         }
                     ))

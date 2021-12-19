@@ -1,85 +1,138 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { setUserWalletData } from '../../../store_redux/otherAppDataSlice'
+import { setUserWalletData, setCurrentOrderedTransitData } from '../../../store_redux/otherAppDataSlice'
 import { Feather } from '@expo/vector-icons'; 
 import { StyleSheet, TouchableOpacity, View, Text, FlatList, ActivityIndicator } from 'react-native'
 import { AntDesign, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'; 
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
-import { auth } from '../../../firebase';
-import { onAuthStateChanged } from 'firebase/auth'
 
 import { getDatabase, ref, get, set, onValue } from "firebase/database";
 import { useDispatch, useSelector } from 'react-redux';
+import { auth } from '../../../firebase';
 
-export default function WalletScreen({navigation}) {
-    const [USER_WALLETS_DATA, set_USER_WALLETS_DATA] = useState([])
+export default function CreateOrderScreen({navigation}) {
+    const [TRANSITS_HISTORY_DATA, set_TRANSITS_HISTORY_DATA] = useState()
+
+    const USER_WALLETS_DATA = useSelector(state => state.otherAppData.userWalletData)
+
+    const currentOrderedTransitData = useSelector(state => state.otherAppData.currentOrderedTransitData)
+    // console.log(currentOrderedTransitData)
     
-    const userWalletData = useSelector(state => state.otherAppData.userWalletData) 
+    const [showHistoryBlock, setShowHistoryBlock] = useState(false)
+    const [showPaymentMethodsList, setShowPaymentMethodsList] = useState(false)
 
-    console.log(USER_WALLETS_DATA)
-    const TRANSITS_DATA = [
-        {
-            id: 1,
-            date: '17.12.21',
-            time_departure: '15:00',
-            time_arrival: '22:00',
-            location_from: 'Kyiv',
-            location_to: 'Lviv',
-            cost_trip: '330'
+    const showTransitsHistoryBlock = () => {
+        setShowHistoryBlock(prev => !prev);
+
+        if (showHistoryBlock != true) { 
+            getTransitsHistoryData();
         }
-    ];
+        
+    }
 
-    // console.log(auth)
-    // console.log(database)
-
-    // onAuthStateChanged(auth, currentUser => {
-       
-    // })
+    const openAddCreditCardScreen = () => {
+        navigation.navigate('CreditCardsScreen')
+    }
 
     const dispatch = useDispatch();
     // Get data from remote BD (Firebase)
     const getUserWalletData = useCallback(
-        async () => {
-            if (!userWalletData) {
-                const db = getDatabase();
-                const db_ref = ref(db, 'users_data/wallets_data');
-                const db_result = await get(db_ref)
+        async () => { 
+            const db = getDatabase();
+            const db_ref = ref(db, 'users_data/wallets_data');
+            const db_result = await get(db_ref)
+            const userWalletData_ = Object.values(db_result.val());
+            dispatch(setUserWalletData(userWalletData_))
+        }, [] 
+    )
+    // Get data from remote BD (Firebase)
+    const getTransitsHistoryData = useCallback(
+        async () => { 
+            const db = getDatabase();
+            const db_ref = ref(db, 'users_data/transits_history');
+            const db_result = await get(db_ref)
 
-                const userWalletData_ = db_result.val();
-                dispatch(setUserWalletData({userWalletData: userWalletData_}))
+            if (db_result.size != 0) {
+                const transitsHistoryData = Object.values(db_result.val());
+               // console.log(transitsHistoryData)
+                set_TRANSITS_HISTORY_DATA(transitsHistoryData)
             }
+            else {
+                set_TRANSITS_HISTORY_DATA(null)
+            }
+            
         }, [] 
     )
 
-    useEffect(() => {
-        getUserWalletData()
-        set_USER_WALLETS_DATA([userWalletData])
-    }, [getUserWalletData])
+    // Add new data in BaseData
+    const addCurrentOrderedTransitData = async () => {
+        if (currentOrderedTransitData) {
+            const db = getDatabase();
+            const db_ref = ref(db, 'users_data/transits_history/' + currentOrderedTransitData.id);
 
+            await set(db_ref, {
+               id: currentOrderedTransitData.id,
+               // roure data
+               location_from: currentOrderedTransitData.from,
+               location_to: currentOrderedTransitData.to,
+               // car data
+               car_title: currentOrderedTransitData.car_title,
+               car_photo: currentOrderedTransitData.car_photo,
+               cost_trip: currentOrderedTransitData.car_cost,
+               // other data
+               datetime: currentOrderedTransitData.datetime,
+               // car driver data
+               car_driver_photo: currentOrderedTransitData.car_driver_photo,
+               car_driver_name: currentOrderedTransitData.car_driver_name,
+               car_driver_age: currentOrderedTransitData.car_driver_age,
+               // client data
+               name_client: currentOrderedTransitData.client_first_and_last_names,
+               phone_client: currentOrderedTransitData.client_phone,
+               user_uid: auth.currentUser.uid
+            })
+        }
+    }
+
+
+    useEffect(() => {
+        if (showPaymentMethodsList) {
+            getUserWalletData()
+        }
+    }, [getUserWalletData, showPaymentMethodsList])
     
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null) 
     /* Setuping selected payment method */
 
-    const setupSelectedPaymentMethod = (pMethod, item) => {
+    const setupSelectedPaymentMethod = (pMethod, item = null) => {
+       // console.log(item)
         setSelectedPaymentMethod({
-            paymentMethod: pMethod,
-            paymentData: {
+            paymentMethod: pMethod, 
+            paymentData: item != null ? {
                 id: item.id,
                 card_number: item.card_number,
                 card_balance: item.card_balance
-            }
+            } : {}
         })
+        console.log(selectedPaymentMethod.paymentData)
         setShowPaymentMethodsList(false)
     }
 
-    const historyItemWrapper = ({item}) => {
-        return (
-            <View style={styles.historyItemWrapper}>
-                <Text style={styles.date_text}> {item.date} </Text>
-                <Text style={styles.time_text}> {item.time_departure} - {item.time_arrival} </Text>
-                <Text style={styles.from_to_locations_text}> {item.location_from} → {item.location_to} </Text>
-                <Text style={styles.cost_text}> {item.cost_trip} $ </Text>
-            </View>
-        )
+    const transitHistoryItemWrapper = ({item}) => {
+        console.log(item)
+        if (item != null) {
+            return (
+                <View style={styles.historyItemWrapper}>
+                    <Text style={styles.transit_history_field}> {item.date} </Text>
+                    <Text style={styles.transit_history_field}> {item.location_from} → {item.location_to}  </Text>
+                    <Text style={styles.transit_history_field}> {item.cost_trip} $ </Text>
+                    <Text style={styles.transit_history_field}> {item.datetime} </Text>
+                    <Text style={styles.transit_history_field}> {item.car_title} → {item.location_to} </Text>
+                    <Text style={styles.transit_history_field}> {item.name_client} $ </Text>
+                    <Text style={styles.transit_history_field}> {item.phone_client} </Text>
+                    <Text style={styles.transit_history_field}> {item.car_driver_name} </Text>
+                    <Text style={styles.transit_history_field}> {item.car_driver_age} years </Text>
+                </View>
+            )
+        }
     }
 
     const paymentMethodItemWrapper = ({item}) => {
@@ -91,16 +144,20 @@ export default function WalletScreen({navigation}) {
             </TouchableOpacity>
         )
     }
+    
+    const writeNewTransitData = () => {
+        dispatch(setCurrentOrderedTransitData(Object.assign({}, currentOrderedTransitData, clientInfoForm)))
+
+        // Writes in BaseData
+        addCurrentOrderedTransitData()
+    }
 
     const [clientInfoForm, setClientInfoForm] = useState({
-        first_and_last_names: '',
-        phone: '',
+        client_first_and_last_names: '',
+        client_phone: '',
         datetime: ''
-    })
+    }) 
     
-    const [showHistoryBlock, setShowHistoryBlock] = useState(false)
-    const [showPaymentMethodsList, setShowPaymentMethodsList] = useState(true)
-
     return (
         <View style={styles.container}>
             <View style={styles.screenHeader}>
@@ -108,7 +165,7 @@ export default function WalletScreen({navigation}) {
                     <Feather name="menu" size={24} color="black" />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.showHistory_btn} onPress={() => setShowHistoryBlock(prev => !prev)} activeOpacity={0.7} >
+                <TouchableOpacity style={styles.showHistory_btn} onPress={() => showTransitsHistoryBlock()} activeOpacity={0.7} >
                     <Text style={styles.showHistoryBtn_text}> { showHistoryBlock ? 'Hide' : 'History' } </Text>
                 </TouchableOpacity>
             </View>
@@ -117,27 +174,47 @@ export default function WalletScreen({navigation}) {
                 <View style={styles.historyWrapper}>
 
                     <FlatList
-                        data={TRANSITS_DATA}
-                        renderItem={historyItemWrapper}
+                        data={TRANSITS_HISTORY_DATA}
+                        renderItem={transitHistoryItemWrapper}
                         keyExtractor={item => item.id}
                     />
 
                     <Text style={styles.from_to_locations_text}>
                     </Text>
                 </View>
-            : console.log(selectedPaymentMethod)}
+            : <View></View> }
             
             <ScrollView style={styles.scrV_container}>
                 <View style={styles.firstSection}>
                     <View style={styles.walletInfoWrapper}>
                         <View style={styles.subEl_1_myWallet}>
-                            <Text style={styles.subEl_1_caption}>
-                                My wallet
-                            </Text>
+                            {
+                                selectedPaymentMethod == null
+                                ? 
+                                    <Text style={styles.subEl_attention}>
+                                        Select a Payment Method...
+                                    </Text>
+                                :
+                                selectedPaymentMethod.paymentMethod === "cash"
+                                ?
+                                <Text style={styles.subEl_attention}>
+                                    You have chosen to pay in cash...
+                                </Text>
+                                :
+                                selectedPaymentMethod.paymentMethod === "card"
+                                ?
+                                <View>
+                                    <Text style={styles.subEl_1_caption}>
+                                        My wallet
+                                    </Text>
 
-                            <Text style={styles.subEl_1_text}>
-                                { selectedPaymentMethod.paymentData.card_balance ? selectedPaymentMethod.paymentData.card_balance + ' $' : 'Your cash' }
-                            </Text>
+                                    <Text style={styles.subEl_attention}>
+                                        { selectedPaymentMethod.paymentData.card_balance + ' $' }
+                                    </Text>
+                                </View>
+                                : <View></View> 
+                            }
+                
                         </View>
 
                         <View style={styles.subEl_2_amountSum}>
@@ -146,7 +223,7 @@ export default function WalletScreen({navigation}) {
                             </Text>
 
                             <Text style={styles.subEl_2_text}>
-                                $ 50.70
+                                { currentOrderedTransitData.car_cost }
                             </Text>
                         </View>
                     </View>
@@ -163,7 +240,7 @@ export default function WalletScreen({navigation}) {
                                 ?
                                     <TouchableOpacity style={[styles.subEl_3_button, { backgroundColor: showPaymentMethodsList ? '#DC9D00' : '#fcba03' }]} onPress={() => setShowPaymentMethodsList(prev => !prev)}>
                                         <AntDesign name="creditcard" size={24} color="#fff8f2" />
-                                        <Text style={styles.subEl_3_btn_text}> Credit card </Text>
+                                        <Text style={styles.subEl_3_btn_text}> { '****' + selectedPaymentMethod.paymentData.card_number.slice(-4) } </Text>
                                     </TouchableOpacity>
                                 :
                                 selectedPaymentMethod.paymentMethod == "cash" 
@@ -187,11 +264,14 @@ export default function WalletScreen({navigation}) {
                 { showPaymentMethodsList
                 ?
                     <View style={styles.paymentMethodListWrapper}>
-                        <FlatList
-                            data={USER_WALLETS_DATA}
-                            renderItem={paymentMethodItemWrapper}
-                            keyExtractor={item => item.id}
-                        />
+                        { USER_WALLETS_DATA != null
+                            ?
+                            <FlatList
+                                data={USER_WALLETS_DATA}
+                                renderItem={paymentMethodItemWrapper}
+                                keyExtractor={item => item.id}
+                            /> : <Text style={styles.attention}> You haven't added any cards yet.  </Text>
+                        }
 
                         <View style={styles.bts_wrapper}>
                             <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_cash_button]} onPress={() => setupSelectedPaymentMethod('cash', {})}>
@@ -199,13 +279,13 @@ export default function WalletScreen({navigation}) {
                                 <Text style={[styles.subEl_3_btn_text, styles.subEl_3_addCart_text]}> Cash </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_addCard_button]} onPress={() => setupSelectedPaymentMethod('card', {})}>
+                            <TouchableOpacity style={[styles.subEl_4_button, styles.subEl_4_addCard_button]} onPress={() => openAddCreditCardScreen()}>
                                 <Ionicons name="cash-outline" size={24} color="#fff8f2" />
                                 <Text style={styles.subEl_3_btn_text}> Add card </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
-                : console.log()
+                : <View></View> 
                 }
 
                 <View style={styles.secondSection}>
@@ -214,13 +294,13 @@ export default function WalletScreen({navigation}) {
                             style={styles.firAndLasNameInput} 
                             placeholder='Your first name and last name...' 
                             onChangeText={(text) => setClientInfoForm(prev => {
-                                return {...prev, first_and_last_names: text }}
+                                return {...prev, client_first_and_last_names: text }}
                         )}/>
                         <TextInput 
                             style={styles.firAndLasNameInput} 
                             placeholder='Your phone...' 
                             onChangeText={(text) => setClientInfoForm(prev => {
-                                return {...prev, phone: text }}
+                                return {...prev, client_phone: text }}
                         )}/>
                         <TextInput 
                             style={styles.firAndLasNameInput} 
@@ -231,7 +311,7 @@ export default function WalletScreen({navigation}) {
                     </View>
                 </View>
 
-                <TouchableOpacity style={styles.apply_button}>
+                <TouchableOpacity style={styles.apply_button} onPress={() => writeNewTransitData()}>
                     <Text style={styles.applyBtn_text}> Apply </Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -240,6 +320,13 @@ export default function WalletScreen({navigation}) {
 }
 
 const styles = StyleSheet.create({
+    container_onload: {
+        flex: 1,
+        position: 'relative',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff'
+    },
     container: {
         flex: 1,
         position: 'relative',
@@ -310,35 +397,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15
     },
-    date_text: {
+    transit_history_field: {
         color: '#999999',
         fontFamily: 'murecho_regular',
         fontSize: 15,
         width: '45%',
         textAlign: 'left',
         marginBottom: 10,
-    },
-    time_text: {
-        color: '#999999',
-        fontFamily: 'murecho_regular',
-        fontSize: 15,
-        width: '45%',
-        textAlign: 'right',
-        marginBottom: 10,
-    },
-    from_to_locations_text: {
-        color: '#999999', 
-        fontFamily: 'murecho_regular',
-        fontSize: 15,
-        textAlign: 'left',
-        marginTop: 10,
-    },
-    cost_text: {
-        color: '#999999',
-        fontFamily: 'murecho_regular',
-        fontSize: 15,
-        textAlign: 'right',
-        marginTop: 10,
     },
     /* Main screen part */
     scrV_container: {
@@ -364,7 +429,6 @@ const styles = StyleSheet.create({
         top: 0, 
         left: 0,
         width: '100%',
-        height: 260,
         backgroundColor: '#fff',
         paddingTop: 120,
         paddingHorizontal: 20,
@@ -374,6 +438,12 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#999999',
         paddingBottom: 5
+    },
+    subEl_attention: {
+        fontFamily: 'murecho_regular',
+        fontSize: 20,
+        color: '#525252',
+        marginBottom: 11,
     },
     subEl_1_caption: {
         fontFamily: 'murecho_sBold',
@@ -401,6 +471,13 @@ const styles = StyleSheet.create({
         fontFamily: 'murecho_sBold',
         fontSize: 20,
         color: '#525252'
+    },
+    attention: {
+        fontFamily: 'murecho_regular',
+        fontSize: 18,
+        color: '#fcba03',
+        marginVertical: 20,
+        textAlign: 'center',
     },
     /* Second sub section */
     paymentMethodWrapper: {

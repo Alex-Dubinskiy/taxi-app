@@ -1,8 +1,9 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { useSelector, useDispatch } from 'react-redux'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
+import { setCurrentOrderedTransitData } from '../../../store_redux/otherAppDataSlice'
 
-export default function RouteInfoBlock({ showRouteInfoBtn }) {
+export default function RouteInfoBlock({ showRouteInfoBtn, navigation }) {
     /* Get values ... */
     const routeMarkersCoordinates = useSelector(state => state.mapData.routeMarkersCoordinates)
 
@@ -10,13 +11,38 @@ export default function RouteInfoBlock({ showRouteInfoBtn }) {
     const selectedCarData = useSelector(state => state.mapData.selectedCarData)
     const selectedCarDriverData = useSelector(state => state.mapData.selectedCarDriverData)
 
+    const dispatch = useDispatch();
+
+    const makeOnOrderBtnClick = () => {
+        try {
+            dispatch(setCurrentOrderedTransitData({
+                id: Date.now().toString(),
+                // route
+                from: routeMarkersCoordinates[0].title,
+                to: routeMarkersCoordinates[1].title,
+                // car
+                car_title: selectedCarData.car_title,
+                car_photo: selectedCarData.photo_url,
+                car_cost: selectedCarData.cost,
+                // car driver
+                car_driver_photo: selectedCarDriverData.photo_url,
+                car_driver_name: selectedCarDriverData.name,
+                car_driver_age: selectedCarDriverData.age,
+            }))
+        } catch(e) {
+            console.log(e)
+        }
+
+        navigation.navigate('CreateOrderScreen')
+    }
+
     return (
         showRouteInfoBtn 
         ?
-            <View style={[styles.container, { height: showRouteInfoBtn ? 250 : 0 }]}>
+            <View style={[styles.container, { height: showRouteInfoBtn ? 340 : 0 }]}>
                 <View style={styles.header}>
                     <Text style={styles.caption}>
-                    Current route info
+                        Current route info
                     </Text> 
                 </View>
 
@@ -83,13 +109,19 @@ export default function RouteInfoBlock({ showRouteInfoBtn }) {
                         </View>
                     </View>
                 </View>
+
+                <TouchableOpacity style={styles.checkout_btn} onPress={() => makeOnOrderBtnClick()}>
+                    <Text style={styles.checkoutBtn_caption}>
+                        Make on order →
+                    </Text>
+                </TouchableOpacity>
             </View>
         : 
             <View></View>
     )
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create({ 
     container: {
         backgroundColor: 'rgba(255,255,255, 0.9)',
         paddingHorizontal: 20, 
@@ -106,6 +138,7 @@ const styles = StyleSheet.create({
     },
     caption: {
         width: '100%',
+        marginBottom: 20,
         color: '#575757',
         fontSize: 18,
         textAlign: 'left',
@@ -153,4 +186,20 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginRight: 15
     },
+    checkout_btn:{
+        paddingVertical: 15, 
+        backgroundColor: '#fcba03',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+        width: '100%',
+        zIndex: 2,
+        marginTop: 20
+    },
+    checkoutBtn_caption:{
+        color: '#fff',
+        fontSize: 15,
+        textAlign: 'center',
+        fontFamily: 'murecho_sBold',
+    }
 })

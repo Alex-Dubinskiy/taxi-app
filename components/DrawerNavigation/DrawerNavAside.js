@@ -1,9 +1,13 @@
 import React from 'react'
-import { StyleSheet, Text, View, Button } from 'react-native'
+import { StyleSheet} from 'react-native'
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import WalletScreen from '../MainAppPartScreens/WalletScreen/WalletScreen';
-import MapViewScreen from '../MainAppPartScreens/MapViewScreen/MapViewScreen';
+import WalletScreen from '../MainAppPartScreens/WalletScreen/CreateOrderScreen';
 import CustomDrawer from './CustomDrawer';
+// Drawer nav screens
+import MapViewScreen from '../MainAppPartScreens/MapViewScreen/MapViewScreen';
+import MyWalletScreen from '../MainAppPartScreens/WalletScreen/MyWalletScreen';
+import CreateOrderScreen from '../MainAppPartScreens/WalletScreen/CreateOrderScreen';
+import CreditCardsScreen from '../MainAppPartScreens/WalletScreen/CreditCardsScreen';
 
 // navigation.navigate('Notifications')}, navigation.goBack()
 
@@ -16,8 +20,25 @@ export default function DrawerNavAside() {
             drawerContent={ props => <CustomDrawer {...props} /> }
         > 
             <Drawer.Screen 
-                name="WalletScreen" 
-                component={WalletScreen} 
+                name="MapViewScreen" 
+                component={MapViewScreen} 
+                options={{ 
+                    drawerLabel: 'Create route',
+                    drawerLabelStyle: {
+                        fontSize: 15,
+                        fontFamily: 'murecho_regular',
+                        color: '#525252'
+                    },
+                    drawerItemStyle: {
+                        borderWidth: 1,
+                        borderColor: '#fcba03'
+                    },
+                    drawerInactiveBackgroundColor:'#f7f7f7',
+                    drawerActiveBackgroundColor: '#fcba03'
+            }}/>
+            <Drawer.Screen 
+                name="MyWalletScreen" 
+                component={MyWalletScreen} 
                 options={{ 
                     drawerLabel: 'Wallet',   
                     drawerLabelStyle: {
@@ -33,10 +54,27 @@ export default function DrawerNavAside() {
                     drawerActiveBackgroundColor: '#fcba03'
             }}/>
             <Drawer.Screen 
-                name="MapViewScreen" 
-                component={MapViewScreen} 
+                name="CreditCardsScreen" 
+                component={CreditCardsScreen} 
                 options={{ 
-                    drawerLabel: 'Create route',
+                    drawerLabel: 'Credit cards',   
+                    drawerLabelStyle: {
+                        fontSize: 15,
+                        fontFamily: 'murecho_regular',
+                        color: '#525252'
+                    },
+                    drawerItemStyle: {
+                        borderWidth: 1,
+                        borderColor: '#fcba03'
+                    },
+                    drawerInactiveBackgroundColor:'#f7f7f7',
+                    drawerActiveBackgroundColor: '#fcba03'
+            }}/>
+            <Drawer.Screen 
+                name="CreateOrderScreen" 
+                component={CreateOrderScreen} 
+                options={{ 
+                    drawerLabel: 'Create order screen',
                     drawerLabelStyle: {
                         fontSize: 15,
                         fontFamily: 'murecho_regular',

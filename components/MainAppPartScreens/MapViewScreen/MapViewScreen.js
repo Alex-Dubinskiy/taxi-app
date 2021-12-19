@@ -73,7 +73,7 @@ export default function MapViewScreen({navigation}) {
 
             <ShowRouteInfoBtn showRouteInfoBtn={showRouteInfoBtn} setShowRouteInfoBtn={setShowRouteInfoBtn} isTripRouteBuilt={isTripRouteBuilt}/>
             <ClearRouteMarkersBtn setIsCanCreateRoute={setIsCanCreateRoute} setNextStepStatus={setNextStepStatus} setIsShowFormsForCreationRoute={setIsShowFormsForCreationRoute} setShowRouteInfoBtn={setShowRouteInfoBtn} setIsTripRouteBuilt={setIsTripRouteBuilt}/>
-            <RouteInfoBlock showRouteInfoBtn={showRouteInfoBtn} />
+            <RouteInfoBlock showRouteInfoBtn={showRouteInfoBtn} navigation={navigation} />
         </View>
     )
 }
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: 20,
         top: 40,
-        zIndex: 3,
+        zIndex: 5,
         shadowColor: "#000",
         shadowOffset: {
             width: 0,

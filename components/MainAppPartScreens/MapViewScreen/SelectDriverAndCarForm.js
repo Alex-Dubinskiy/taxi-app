@@ -190,7 +190,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderRadius: 10,
         width: '90%',
-        marginTop: 20
+        marginTop: 20,
+        zIndex: 10
     },
     /* Header */
     header: {
@@ -237,7 +238,8 @@ const styles = StyleSheet.create({
         fontSize: 15,
         textAlign: 'center',
         fontFamily: 'murecho_regular',
-        marginLeft: 15
+        marginLeft: 15,
+        zIndex: 20
     },
     icon_img: {
         width: 30,
@@ -270,7 +272,7 @@ const styles = StyleSheet.create({
         top: 80,           
         width: '100%',
         position: 'absolute',
-        zIndex: 10
+        zIndex: 20
 
     },
     applyBtn:{

@@ -21,6 +21,14 @@ export default function CustomDrawer(props) {
         })
         .catch(error => console.log(error.message))
     }
+    
+    // Exception last nav menu item
+    const { state, ...rest } = props;
+    const newState = { ...state };
+    newState.routes = newState.routes.filter(
+      (item) => item // .name !== 'CreateOrderScreen',
+    );
+
 
     return (
         <View style={styles.container}>
@@ -40,11 +48,11 @@ export default function CustomDrawer(props) {
             </LinearGradient>
 
             <DrawerContentScrollView {...props}>
-                <DrawerItemList {...props} />
+                <DrawerItemList state={newState} {...rest} />
             </DrawerContentScrollView>
 
             <TouchableOpacity style={styles.signOutBtn_wrapper} onPress={() => handleSignOut()}>
-                <Ionicons name="exit-outline" size={24} color="rgba(255,255,255,0.7)" />
+                <Ionicons name="exit-outline" size={24} color="rgba(0,0,0,0.5)" />
                 <Text style={styles.signOutBtn_text}>Sing out</Text>
             </TouchableOpacity>
         </View>
@@ -96,12 +104,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         marginBottom: 15,
-        borderColor: 'rgba(255,255,255,0.7)',
+        borderColor: 'rgba(0,0,0,0.5)',
         borderWidth: 1,
         borderRadius: 15
     },
     signOutBtn_text: {
-        color: 'rgba(255,255,255,0.7)',
+        color: 'rgba(0,0,0,0.5)',
         fontSize: 15,
         textAlign: 'left',
         fontFamily: 'murecho_regular',

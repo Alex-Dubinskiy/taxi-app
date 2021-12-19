@@ -6,9 +6,6 @@ import { auth } from '../../firebase';
 
 
 export default function MainAppPart(/*{navigation}*/) {
-    const navigation = useNavigation();
-
-    // const { storeData, getData } = functionsForAsyncStorage
   
     return (
         <SafeAreaView style={styles.container}>

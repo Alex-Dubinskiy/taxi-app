@@ -25,14 +25,6 @@ export default function StartScreen({navigation}) {
     isClickedOpenAppBtn = useSelector(state => state.otherAppData.isClickedOpenAppBtn)
 
     useEffect(()=> {
-         // For old auth checking
-        // Get data from Async storage
-        // getData('user_data')
-        // .then(res => {  // get user 'isAuth' status (true/false)
-        //     if (res.email, res.password, res.isAuth)
-        //        setIsAuth(res.isAuth)
-        // })
-        // .catch((error) => setIsAuth(false))
         onAuthStateChanged(auth, currentUser => {
             if (!currentUser) {
                 setIsAuth(false)
